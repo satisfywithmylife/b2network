@@ -1,6 +1,6 @@
 <h1 align="center">B2奥德赛</h1>
 
-<p align="center">网站<a href="https://task.bsquared.network/points/">Skygate</a></p>
+<p align="center">网站<a href="https://task.bsquared.network/points/">B2NETWORK</a></p>
 <p align="center">
 <img src="https://img.shields.io/badge/python-3670A0?style=for-the-badge&logo=python&logoColor=ffdd54">
 </p>
