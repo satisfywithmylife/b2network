@@ -32,7 +32,7 @@ class B2Network():
         self.b2_explorer = 'https://haven-explorer.bsquared.network/tx/{}'
         self.account = Account.from_key(pk)
         self.session = requests.session()
-        self.b2_login_str = 'login#{}#{}' #login#1707066395#0x91f0f8f18cdd2d091fc0a41f801729d22daf0be7
+        self.b2_login_str = 'login#{}#{}'
         self.access_token = ''
         self.invite_code = invite_code
         
