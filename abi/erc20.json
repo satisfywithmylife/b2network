@@ -21,6 +21,19 @@
       "type": "constructor"
     },
     {
+        "inputs": [
+            {
+                "internalType": "address",
+                "name": "_user",
+                "type": "address"
+            }
+        ],
+        "name": "faucet",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+    },
+    {
       "anonymous": false,
       "inputs": [
         {
