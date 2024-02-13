@@ -12,6 +12,9 @@ b2_testnet_usdc_address = Web3.to_checksum_address('0x6125bd1b49822ea3a052d2edbd
 b2_testnet_usdt_address = Web3.to_checksum_address('0x17459858c5bad5e97e48eb831fa8b1096964b0d7')
 b2_testnet_blow_lp_contract_address = Web3.to_checksum_address('0x0C467640b1d4D990927109c5CA6e13a6c9B65Adb')
 b2_stable_coin_lp_contract_address = Web3.to_checksum_address('0x71e5bDa7fE44827D69B10b18bbdf6a1ce8c61d90')
+b2_lend_core = Web3.to_checksum_address('0xaD89Db5244ef8c318Ee9F6a83839bDe441308fFF')
+b2_lend_btc_market = Web3.to_checksum_address('0x87a074cD89DB1664cA4C16289a651bC9395f6282')
+b2_lend_borrow_usdc = Web3.to_checksum_address('0xE42572850BefB5859475d773646b5741DD478Db9')
 
 # 保存账户链接
 my_file_name = 'account.txt'

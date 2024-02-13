@@ -228,9 +228,15 @@ class B2Network():
             # ],
             # meson 来回跨稳定币任务
             # 'https://task-meson.bsquared.network/task/refresh': [
+            #     "meson_gas_station",                
             #     "meson_withdraw",
             #     "meson_deposit",
             # ]
+            # layerbank借贷任务
+            'https://task-layerbank.bsquared.network/task/refresh': [
+                'layerbank_supply',
+                'layerbank_borrow',
+            ]
         }
         for task_url in task_tpyes.keys():
             for task_type in task_tpyes[task_url]:
@@ -252,6 +258,27 @@ class B2Network():
             'Referer': 'https://task.bsquared.network/',
             'User-Agent': Faker().chrome()
         }
+        
+    def lend_supply(self, amount=0.0005):
+        contract = self.b2w3.eth.contract(address=b2_lend_core, abi=self.load_abi('lend'))
+        amount = Web3.to_wei(amount, 'ether')
+        txn = contract.functions.supply(b2_lend_btc_market, amount)
+        tx_hash = self._make_tx(txn=txn, eth_amount=amount, gas=150000)
+        self.add_log('抵押btc成功', tx_hash)
+    
+    def lend_enter_market(self):
+        contract = self.b2w3.eth.contract(address=b2_lend_core, abi=self.load_abi('lend'))
+        txn = contract.functions.enterMarkets([b2_lend_btc_market])
+        tx_hash = self._make_tx(txn=txn, gas=150000)
+        self.add_log('打开btc抵押物开关成功', tx_hash)
+        
+    
+    def lend_borrow(self, amount=0.01):
+        contract = self.b2w3.eth.contract(address=b2_lend_core, abi=self.load_abi('lend'))
+        amount = int(amount * 1e6)
+        txn = contract.functions.borrow(b2_lend_borrow_usdc, amount)
+        tx_hash = self._make_tx(txn=txn, gas=400000)
+        self.add_log('借usdc成功', tx_hash)
     
     def _make_tx(self, txn, eth_amount=0, is_data=False, spender=None, gas=0, gas_price=0):
        
