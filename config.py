@@ -15,6 +15,7 @@ b2_stable_coin_lp_contract_address = Web3.to_checksum_address('0x71e5bDa7fE44827
 b2_lend_core = Web3.to_checksum_address('0xaD89Db5244ef8c318Ee9F6a83839bDe441308fFF')
 b2_lend_btc_market = Web3.to_checksum_address('0x87a074cD89DB1664cA4C16289a651bC9395f6282')
 b2_lend_borrow_usdc = Web3.to_checksum_address('0xE42572850BefB5859475d773646b5741DD478Db9')
+owlto_sepolia_bridge = Web3.to_checksum_address('0x5e809A85Aa182A9921EDD10a4163745bb3e36284')
 
 # 保存账户链接
 my_file_name = 'account.txt'

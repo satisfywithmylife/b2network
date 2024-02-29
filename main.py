@@ -27,6 +27,7 @@ class B2Network():
     def __init__(self, pk: str, b2_endpoint='https://haven-rpc.bsquared.network', proxy='', gas_scala=1, invite_code='') -> None:
         self.pk = pk
         self.b2w3 = Web3(Web3.HTTPProvider(b2_endpoint, request_kwargs={"proxies": {"http": proxy, "https": proxy}}))
+        self.spw3 = Web3(Web3.HTTPProvider('https://gateway.tenderly.co/public/sepolia', request_kwargs={"proxies": {"http": proxy, "https": proxy}}))
         self.proxy = {'http:': proxy, 'https': proxy}
         self.gas_scala = gas_scala
         self.b2_explorer = 'https://haven-explorer.bsquared.network/tx/{}'
@@ -236,6 +237,11 @@ class B2Network():
             'https://task-layerbank.bsquared.network/task/refresh': [
                 'layerbank_supply',
                 'layerbank_borrow',
+            ],
+            # owlto
+            'https://task-meson.bsquared.network/task/refresh': [
+                'owlto_deposit',
+                'owlto_withdraw'
             ]
         }
         for task_url in task_tpyes.keys():
@@ -280,8 +286,9 @@ class B2Network():
         tx_hash = self._make_tx(txn=txn, gas=400000)
         self.add_log('借usdc成功', tx_hash)
     
-    def _make_tx(self, txn, eth_amount=0, is_data=False, spender=None, gas=0, gas_price=0):
-       
+    def _make_tx(self, txn, eth_amount=0, is_data=False, spender=None, gas=0, gas_price=0, use_sepolia=False):
+        if use_sepolia:
+            self.b2w3 = self.spw3
         if is_data:
             tx = {
                 'chainId': self.b2w3.eth.chain_id,
@@ -314,6 +321,51 @@ class B2Network():
                 pass
         return order_hash.hex()
     
+    def owlto_bridge_to_sepolia(self):
+        amount = Web3.to_wei(random.uniform(0.01, 0.016), 'ether')
+        weth_contract = self.b2w3.eth.contract(address=b2_testnet_eth_address, abi=self.load_abi('erc20'))
+        # w_amount = weth_contract.functions.balanceOf(self.account.address).call()
+        # exit()
+        tx = weth_contract.functions.transfer(owlto_sepolia_bridge, amount)
+        tx_hash = self._make_tx(txn=tx, gas=50000)
+        self.add_log(f'跨链 eth 到 sepolia', tx_hash)
+        if self.post_owlto_request(tx_hash, amount, 5008):
+            self.add_log('b2跨链成功')
+        
+    def post_owlto_request(self, tx_hash, amount, ext):
+        payload = {
+            'address': self.account.address,
+            'chainid': self.b2w3.eth.chain_id,
+            'nonce': self.b2w3.eth.get_transaction_count(self.account.address) -1,
+            'tx_hash': tx_hash,
+            'agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36',
+            'sign': str(self.account.address) + 'owlto',
+            'input_amount': int(amount - Web3.to_wei('0.005', 'ether')),
+            'transation_amount': int(amount + ext),
+            'wallet': 'MetaMask'
+        }
+        print(payload)
+        res = requests.post(url='https://owlto.finance/api/config/tx-action', json=payload).json()
+        if res['code'] >0:
+            self.add_log(f'请求owlto失败，原因：{res["msg"]}')
+            return False
+        
+        return True
+    
+    def owlto_bridge_from_sepolia(self):
+        # 使用sepolia节点作为provider
+        self.b2w3 = self.spw3
+        if not self.b2w3.eth.get_balance(self.account.address):
+            self.add_log('sepolia eth 余额不足')
+            return False
+        amount = Web3.to_wei(random.uniform(0.01, 0.016), 'ether')
+        data = Web3.to_bytes(hexstr='0x')
+        tx_hash = self._make_tx(txn=data, eth_amount=amount, is_data=1, spender=owlto_sepolia_bridge)
+        self.add_log('跨 eth 到 b2 成功', tx_hash)
+        if self.post_owlto_request(tx_hash, amount, 5033):
+            self.add_log('sepolia跨链成功')
+        
+        
     def load_abi(self, abi_name):
         with open(f'./abi/{abi_name}.json', 'r') as f:
             json_data = json.load(f)

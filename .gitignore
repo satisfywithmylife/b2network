@@ -3,3 +3,4 @@ venv
 __pycache__
 *.log
 *.txt
+!requirements.txt
