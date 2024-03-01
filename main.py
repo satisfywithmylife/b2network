@@ -144,6 +144,32 @@ class B2Network():
 
         tx_hash = self._make_tx(txn=txn, is_data=True, spender=b2_testnet_blow_lp_contract_address)
         self.add_log('添加流动性成功！', tx_hash)
+        
+    def b2_glow_stack(self):
+        contract = self.b2w3.eth.contract(address=b2_testnet_blow_lp_contract_address, abi=self.load_abi('position'))
+        lp_nft_num = contract.functions.balanceOf(self.account.address).call()
+        if not lp_nft_num:
+            self.add_log('未发现流动性')
+            return
+
+        for i in range(lp_nft_num):
+            token_id = contract.functions.tokenOfOwnerByIndex(self.account.address, i).call()
+            if not token_id:
+                continue
+            data = '0xfc6f7865'+encode(['uint256', 'address', 'uint256', 'uint256'], [
+                int(token_id),
+                self.account.address,
+                340282366920938463463374607431768211455, # 0xffff....
+                340282366920938463463374607431768211455 # 0xffff....
+            ]).hex()
+            hex_data = self.b2w3.eth.call({'to': b2_testnet_blow_lp_contract_address, 'data': data, 'from': self.account.address}).hex()
+            data_list = self.b2w3.codec.decode(["uint256", "uint256"], bytes.fromhex(hex_data[2:]))
+            if data_list[1]:
+                continue        
+           
+            txn = contract.functions.safeTransferFrom(self.account.address, b2_stable_coin_lp_contract_address, token_id)
+            tx_hash = self._make_tx(txn=txn, gas=250000)
+            self.add_log('stack 成功', tx_hash)
 
         
     def invite(self):
