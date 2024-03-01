@@ -44,6 +44,8 @@ b2.contract_faucet('eth')
 b2.b2_glow_swap(coin='usdc', amount=0.00001)
 # 添加流动性, 只能添加usdt-usdc稳定币池子，这里最好先领usdc水，我代码里面使用的是单边流动性，只需要钱包有usdc即可
 b2.b2_glow_add_lp()
+# 质押流动性，必须先完成添加流动性链上交互
+b2.b2_glow_stack()
 
 # layerbank 借贷, 抵押btc
 b2.lend_supply(amount=0.0001)
