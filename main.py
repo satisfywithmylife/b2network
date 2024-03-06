@@ -268,6 +268,11 @@ class B2Network():
             'https://task-meson.bsquared.network/task/refresh': [
                 'owlto_deposit',
                 'owlto_withdraw'
+            ],
+            # shoebill
+            'https://task-meson.bsquared.network/task/refresh': [
+                'shoebill_supply',
+                'shoebill_borrow'
             ]
         }
         for task_url in task_tpyes.keys():
