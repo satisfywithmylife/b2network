@@ -72,6 +72,17 @@ b2.lend_borrow(amount=0.01)
 b2.owlto_bridge_to_sepolia()
 # b2.owlto_bridge_from_sepolia() # 需要钱包在sepolia测试网有至少0.01eth的水，这个链上调用可以成功，但是任务不成功，还不太明白为什么
 
+# shoebill借贷
+## 获取shoebill水龙头测试水
+b2.get_shoebill_faucet('weth')
+b2.get_shoebill_faucet('stone')
+# shoebill抵押
+b2.shoebill_supply()
+# shoebill借出
+b2.shoebill_borrow()
+
+#oooo明天搞。累了💤
+
 # 刷新奥德赛点数(积分有延迟到账)
 b2.claim_point()
 ```
