@@ -329,7 +329,7 @@ class B2Network():
         
         contract = self.b2w3.eth.contract(address=coin_contract, abi=self.load_abi('erc20'))
         tx = contract.functions.mint(self.account.address, Web3.to_wei(1, 'ether'))
-        tx_hash = self._make_tx(tx)
+        tx_hash = self._make_tx(txn=tx, gas=100000)
         self.add_log(f'获取 shoebill 水 {coin} 成功', tx_hash)
         
     def shoebill_supply(self, coin='weth'):
@@ -342,9 +342,9 @@ class B2Network():
             self.add_log('抵押 coin 必须是 weth，stone 其中之一')
             return
         amount = Web3.to_wei(random.uniform(0.03, 0.09), 'ether')
-        self.approve_token(shoebill_supply, Web3.to_wei(1, 'ether'), coin)
+        self.approve_token(shoebill_supply, Web3.to_wei(1, 'ether'), coin_contract, gas=100000)
         data = '0xa0712d68' + encode(['uint256'], [amount]).hex()
-        tx_hash = self._make_tx(txn=data, is_data=1, spender=shoebill_supply)
+        tx_hash = self._make_tx(txn=data, is_data=1, spender=shoebill_supply, gas=1000000)
         self.add_log(f'shoebill 抵押 {coin} 成功', tx_hash)
         
     def shoebill_borrow(self, coin='stone'):
@@ -358,7 +358,7 @@ class B2Network():
             return
         amount = Web3.to_wei(random.uniform(0.001, 0.0015), 'ether')
         data = '0xc5ebeaec' + encode(['uint256'], [amount]).hex()
-        tx_hash = self._make_tx(txn=data, is_data=1, spender=shoebill_borrow)
+        tx_hash = self._make_tx(txn=data, is_data=1, spender=shoebill_borrow, gas=1000000)
         self.add_log(f'shoebill 借出 {coin} 成功', tx_hash)
         
     
