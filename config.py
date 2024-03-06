@@ -16,6 +16,10 @@ b2_lend_core = Web3.to_checksum_address('0xaD89Db5244ef8c318Ee9F6a83839bDe441308
 b2_lend_btc_market = Web3.to_checksum_address('0x87a074cD89DB1664cA4C16289a651bC9395f6282')
 b2_lend_borrow_usdc = Web3.to_checksum_address('0xE42572850BefB5859475d773646b5741DD478Db9')
 owlto_sepolia_bridge = Web3.to_checksum_address('0x5e809A85Aa182A9921EDD10a4163745bb3e36284')
+shoebill_faucet_weth = Web3.to_checksum_address('0xAd0856F1A517dF866FAF69563105c7C073C44446')
+shoebill_faucet_stone = Web3.to_checksum_address('0xB762B8dA36B59f7dF9aeE066a364c08aac746DbF')
+shoebill_supply = Web3.to_checksum_address('0x80E81348D9386Eb4d10c2A32A7458638cD3308dF')
+shoebill_borrow = Web3.to_checksum_address('0xE103F874B2D144C5B327FA3d57069Bb19c0779e2')
 
 # 保存账户链接
 my_file_name = 'account.txt'

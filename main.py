@@ -169,7 +169,7 @@ class B2Network():
            
             txn = contract.functions.safeTransferFrom(self.account.address, b2_stable_coin_lp_contract_address, token_id)
             tx_hash = self._make_tx(txn=txn, gas=250000)
-            self.add_log('stack 成功', tx_hash)
+            self.add_log('stack 成功', tx_hash, True)
 
         
     def invite(self):
@@ -311,6 +311,51 @@ class B2Network():
         txn = contract.functions.borrow(b2_lend_borrow_usdc, amount)
         tx_hash = self._make_tx(txn=txn, gas=400000)
         self.add_log('借usdc成功', tx_hash)
+        
+    def get_shoebill_faucet(self, coin='weth'):
+        coin_map = {
+            'weth': shoebill_faucet_weth,
+            'stone': shoebill_faucet_stone
+        }
+        coin_contract = coin_map.get(coin)
+        if not coin_contract:
+            self.add_log('coin 必须是 weth，stone 其中之一')
+            return
+        
+        contract = self.b2w3.eth.contract(address=coin_contract, abi=self.load_abi('erc20'))
+        tx = contract.functions.mint(self.account.address, Web3.to_wei(1, 'ether'))
+        tx_hash = self._make_tx(tx)
+        self.add_log(f'获取 shoebill 水 {coin} 成功', tx_hash)
+        
+    def shoebill_supply(self, coin='weth'):
+        coin_map = {
+            'weth': shoebill_faucet_weth,
+            'stone': shoebill_faucet_stone
+        }
+        coin_contract = coin_map.get(coin)
+        if not coin_contract:
+            self.add_log('抵押 coin 必须是 weth，stone 其中之一')
+            return
+        amount = Web3.to_wei(random.uniform(0.03, 0.09), 'ether')
+        self.approve_token(shoebill_supply, Web3.to_wei(1, 'ether'), coin)
+        data = '0xa0712d68' + encode(['uint256'], [amount]).hex()
+        tx_hash = self._make_tx(txn=data, is_data=1, spender=shoebill_supply)
+        self.add_log(f'shoebill 抵押 {coin} 成功', tx_hash)
+        
+    def shoebill_borrow(self, coin='stone'):
+        coin_map = {
+            'weth': shoebill_faucet_weth,
+            'stone': shoebill_faucet_stone
+        }
+        coin_contract = coin_map.get(coin)
+        if not coin_contract:
+            self.add_log('借出 coin 必须是 weth，stone 其中之一')
+            return
+        amount = Web3.to_wei(random.uniform(0.001, 0.0015), 'ether')
+        data = '0xc5ebeaec' + encode(['uint256'], [amount]).hex()
+        tx_hash = self._make_tx(txn=data, is_data=1, spender=shoebill_borrow)
+        self.add_log(f'shoebill 借出 {coin} 成功', tx_hash)
+        
     
     def _make_tx(self, txn, eth_amount=0, is_data=False, spender=None, gas=0, gas_price=0, use_sepolia=False):
         if use_sepolia:
