@@ -81,7 +81,7 @@ b2.shoebill_supply()
 # shoebill借出
 b2.shoebill_borrow()
 
-#oooo明天搞。累了💤
+#oooo和btc有关，不太会呢，欢迎会的提pr
 
 # 刷新奥德赛点数(积分有延迟到账)
 b2.claim_point()
