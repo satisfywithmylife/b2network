@@ -33,7 +33,7 @@ class B2Network():
         self.spw3 = Web3(Web3.HTTPProvider('https://gateway.tenderly.co/public/sepolia', request_kwargs={"proxies": {"http": proxy, "https": proxy}}))
         self.proxy = {'http:': proxy, 'https': proxy}
         self.gas_scala = gas_scala
-        self.b2_explorer = 'https://haven-explorer.bsquared.network/tx/{}'
+        self.b2_explorer = 'https://habitat-explorer.bsquared.network//tx/{}'
         self.account = Account.from_key(pk)
         self.session = requests.session()
         self.b2_login_str = 'login#{}#{}'
