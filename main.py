@@ -16,6 +16,9 @@ from eth_account import Account
 from eth_account.messages import encode_defunct
 from eth_abi import encode
 from loguru import logger
+from functools import cached_property
+from hashlib import sha256
+
 
 
 logger.remove()
@@ -24,7 +27,7 @@ logger.add(sys.stdout, format='<g>{time:YYYY-MM-DD HH:mm:ss:SSS}</g> | <c>{level
 
 class B2Network():
     
-    def __init__(self, pk: str, b2_endpoint='https://haven-rpc.bsquared.network', proxy='', gas_scala=1, invite_code='') -> None:
+    def __init__(self, pk: str, b2_endpoint='https://habitat-rpc.bsquared.network/', proxy='', gas_scala=1, invite_code='') -> None:
         self.pk = pk
         self.b2w3 = Web3(Web3.HTTPProvider(b2_endpoint, request_kwargs={"proxies": {"http": proxy, "https": proxy}}))
         self.spw3 = Web3(Web3.HTTPProvider('https://gateway.tenderly.co/public/sepolia', request_kwargs={"proxies": {"http": proxy, "https": proxy}}))
@@ -428,6 +431,7 @@ class B2Network():
         
         return True
     
+    
     def owlto_bridge_from_sepolia(self):
         # 使用sepolia节点作为provider
         self.b2w3 = self.spw3
@@ -440,7 +444,167 @@ class B2Network():
         self.add_log('跨 eth 到 b2 成功', tx_hash)
         if self.post_owlto_request(tx_hash, amount, 5033):
             self.add_log('sepolia跨链成功')
+  
+    
+    def demail_mint(self, username):
+        mint_nft_abi = [{
+            "inputs": [
+                {
+                    "internalType": "address",
+                    "name": "nft_owner",
+                    "type": "address"
+                },
+                {
+                    "internalType": "string",
+                    "name": "nft_name",
+                    "type": "string"
+                }
+            ],
+            "name": "MintNFT",
+            "outputs": [
+
+            ],
+            "stateMutability": "payable",
+            "type": "function"
+        }]
+       
+        contract = self.b2w3.eth.contract(address=Web3.to_checksum_address(dmain_nft),
+                                     abi=mint_nft_abi)
+        txn = contract.encodeABI(fn_name='MintNFT', args=(
+            Web3.to_checksum_address(self.account.address),
+            username
+        ))
+
+        tx_hash = self._make_tx(txn=txn, is_data=True, spender=dmain_nft)
+        self.add_log('mint dmail nft 成功', tx_hash)
+
+    def send_mail(self, username):
+        send_mail_abi = [{
+            "inputs": [
+                {
+                    "internalType": "string",
+                    "name": "to",
+                    "type": "string"
+                },
+                {
+                    "internalType": "string",
+                    "name": "path",
+                    "type": "string"
+                }
+            ],
+            "name": "send_mail",
+            "outputs": [
+
+            ],
+            "stateMutability": "payable",
+            "type": "function"
+        }]
+       
+        path = self.account.address.lower() + '@dmail.ai'
+        sha256_hash = sha256()
+        sha256_hash.update(path.encode('utf-8'))
+        # 获取哈希值的十六进制表示
+        path = sha256_hash.hexdigest()
+
+        sha256_hash.update(str(username + '@dmail.ai').encode('utf-8'))
+        to = sha256_hash.hexdigest()
+        contract = self.b2w3.eth.contract(address=Web3.to_checksum_address(dmain_send),
+                                     abi=send_mail_abi)
+        txn = contract.encodeABI(fn_name='send_mail', args=(
+            to,
+            path
+        ))
+
+        tx_hash = self._make_tx(txn=txn, is_data=True, spender=dmain_send)
+        self.add_log('发送 dmail 邮件 成功', tx_hash)
         
+    # 获取地板价
+    def layercraft_market_floor_item(self):
+        url = 'https://prod-api.layercraft.co/subgraphs/name/b2-nft-market-pre'
+        payload = {
+            'query': 'query ($pid: String!, $nid: String!, $orderBy: String!, $orderDirection: String!, $skip: Int = 0, $first: Int = 10, $keywords: String) {\n  nfts(\n    orderBy: $orderBy\n    orderDirection: $orderDirection\n    skip: $skip\n    first: $first\n    where: {isTradable: true, project: $pid, collection: $nid}\n  ) {\n    id\n    tokenId\n    nftType\n    count\n    otherId\n    metadataUrl\n    currentAskPrice\n    currentSeller\n    updatedAt\n    collection {\n      name\n      id\n      nftType\n    }\n  }\n  totalCount: nfts(where: {isTradable: true, project: $pid, collection: $nid}) {\n    id\n  }\n}',
+            'variables': {
+                'first': 8,
+                'nid': layercraft_nft_contract_address,
+                'orderBy': 'currentAskPrice',
+                'orderDirection': 'asc',
+                'pid': "1",
+                'skip': 0
+            }
+        }
+        
+        res = requests.post(url=url, json=payload)
+        res = res.json()
+        return res['data']['nfts'][0]
+    
+    # 我的nft
+    def layercraft_my_nft(self):
+        url = f'https://habitat-backend.bsquared.network/api/v2/addresses/{self.account.address}/nft/collections?type='
+        res = requests.post(url=url)
+        res = res.json()
+        if not res.get('items'):
+            self.add_log('没有发现账户存在nft')
+            return
+        
+        nfts = res['items'][0]['token_instances']
+        nft_ids = [item['id'] for item in nfts]
+        
+        url = 'https://prod-api.layercraft.co/subgraphs/name/b2-nft-market-pre'
+        payload = {
+            'query': "query ($tokenIds: [String], $nft: String, $owner: String) {\n  unlistedNFTs: nfts(\n    where: {tokenId_in: $tokenIds, collection: $nft, isTradable: false}\n    orderBy: updatedAt\n    orderDirection: desc\n  ) {\n    id\n    tokenId\n    metadataUrl\n    nftType\n    otherId\n    currentAskPrice\n    updatedAt\n    isTradable\n    collection {\n      name\n      description\n      id\n    }\n  }\n  listedNFTs: nfts(\n    where: {currentSeller: $owner, isTradable: true}\n    orderBy: updatedAt\n    orderDirection: desc\n  ) {\n    id\n    tokenId\n    metadataUrl\n    nftType\n    otherId\n    currentAskPrice\n    updatedAt\n    isTradable\n    collection {\n      name\n      description\n      id\n    }\n  }\n  listed1155NFTs: nft1155Orders(\n    where: {seller: $owner, count_gt: \"0\", status: \"selling\", collection_: {active: true}}\n  ) {\n    nft {\n      id\n      tokenId\n      metadataUrl\n      nftType\n      otherId\n      currentAskPrice\n      updatedAt\n      isTradable\n      collection {\n        name\n        description\n        id\n      }\n    }\n  }\n}",
+            'variables': {
+                'nft': layercraft_nft_contract_address,
+                'owner': self.account.address,
+                'tokenIds': nft_ids
+            }
+        }
+        res = requests.post(url=url, json=payload)
+        res = res.json()
+        unlist_id = res['data']['unlistedNFTs'][0]['tokenId']
+        return unlist_id
+    
+    # 购买
+    def layercraft_buy(self):
+        floor_item = self.layercraft_market_floor_item()
+        price = floor_item['currentAskPrice']
+        id = floor_item['tokenId']
+        
+        if self.b2w3.eth.get_balance(self.account.address) < Web3.to_wei(price, 'ether'):
+            self.add_log(f'余额不足，当前地板价为: {price} btc')
+            return False
+
+        
+        tx = '0x0262d0c3' + encode(['address', 'uint256'], [layercraft_nft_contract_address, id]).hex()
+        tx_hash = self._make_tx(txn=tx, is_data=True, spender=layercraft_market, eth_amount=Web3.to_wei(price))
+        self.add_log('购买nft成功', tx_hash)
+    
+    # 上架
+    def layercraft_sale(self):
+        unlist_nftid = self.layercraft_my_nft()
+        if not unlist_nftid:
+            self.add_log('账户不存在未上架的nft')
+            return
+        # 授权
+        self.nft_approve(layercraft_nft_contract_address, layercraft_market, unlist_nftid)
+        
+        floor_item = self.layercraft_market_floor_item()
+        price = floor_item['currentAskPrice'] - 0.0001 # 取地板价-0.0001 作为售价
+
+        list_tx = '0xdcbb63e6' + encode(['address','uint256','address','uint256'], [
+            layercraft_nft_contract_address, # nft 
+            unlist_nftid,
+            layercraft_wbtc_address, # wbtc
+            Web3.to_wei(price, 'ether')
+        ]).hex()
+        
+        tx_hash = self._make_tx(txn=list_tx, is_data=True, spender=layercraft_market)
+        self.add_log('上架nft成功', tx_hash)
+        
+    def nft_approve(self, nft_address, spender, nft_id):
+        nft_contact = self.b2w3.eth.contract(address=nft_address, abi=self.load_abi('erc721'))
+        approve_tx = nft_contact.functions.approve(spender, nft_id)
+        tx_hash = self._make_tx(approve_tx)
+        self.add_log('nft 授权成功', tx_hash)
         
     def load_abi(self, abi_name):
         with open(f'./abi/{abi_name}.json', 'r') as f:

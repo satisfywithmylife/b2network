@@ -4,3 +4,4 @@ __pycache__
 *.log
 *.txt
 !requirements.txt
+main_tmp*

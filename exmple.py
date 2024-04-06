@@ -67,6 +67,19 @@ b2.shoebill_supply()
 # shoebill借出
 b2.shoebill_borrow()
 
+# dmain mint nft
+b2.demail_mint()
+#dmain 发邮件
+b2.send_mail()
+
+#==============分界线之前的是老的测试网，分界线后的是新的测试网=================
+
+
+# b2 layercraft 购买nft
+b2.layercraft_buy()
+# b2 layercraft 上架nft
+b2.layercraft_sale()
+
 # 刷新奥德赛点数(积分有延迟到账)
 b2.claim_point()
 

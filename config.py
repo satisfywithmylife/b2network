@@ -20,6 +20,12 @@ shoebill_faucet_weth = Web3.to_checksum_address('0xAd0856F1A517dF866FAF69563105c
 shoebill_faucet_stone = Web3.to_checksum_address('0xB762B8dA36B59f7dF9aeE066a364c08aac746DbF')
 shoebill_supply = Web3.to_checksum_address('0x80E81348D9386Eb4d10c2A32A7458638cD3308dF')
 shoebill_borrow = Web3.to_checksum_address('0xE103F874B2D144C5B327FA3d57069Bb19c0779e2')
+oooo_bridge = Web3.to_checksum_address('0x7EcF9dadDF7EE01D850150cB360C824CfA322D8D')
+dmain_send = Web3.to_checksum_address('0x64812F1212f6276068A0726f4695a6637DA3E4F8')
+dmain_nft = Web3.to_checksum_address('0xD4276Edd50813aD26C1c493b66Ee2dFDD3B45230')
+layercraft_nft_contract_address = Web3.to_checksum_address('0xc6aa5857fb7ff7f0a2b9f72d38b744aca251fb80')
+layercraft_market = Web3.to_checksum_address('0x547396018c41Cb7211A8f685515A9a3Aa7eb3e87')
+layercraft_wbtc_address = Web3.to_checksum_address('0x0d4Fa73d08Cd92BB27688d8929C1C8faa38aA2A8')
 
 # 保存账户链接
 my_file_name = 'account.txt'
